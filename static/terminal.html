@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSH — Netwatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/wterm/terminal.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #04060a;
+      --surface:  #09101a;
+      --surface2: #0e1822;
+      --border:   #1a2d42;
+      --accent:   #00e87a;
+      --accent-glow: rgba(0,232,122,0.15);
+      --text:     #a8c4ac;
+      --text-dim: #466050;
+      --danger:   #ff4545;
+      --font:     'Azeret Mono', 'Courier New', monospace;
+      --display:  'Bebas Neue', sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      overflow: hidden;
+      font-family: var(--font);
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px
+      );
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* Top bar */
+    #topbar {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      gap: 0;
+      flex-shrink: 0;
+    }
+
+    .tb-brand {
+      font-family: var(--display);
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      padding-right: 14px;
+      border-right: 1px solid var(--border);
+      margin-right: 14px;
+      line-height: 1;
+    }
+
+    .tb-sep {
+      color: var(--text-dim);
+      font-size: 11px;
+      margin: 0 6px;
+      user-select: none;
+    }
+
+    .tb-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .tb-host {
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+
+    #status-badge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    #conn-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    #conn-dot.connected {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    #conn-dot.disconnected {
+      background: var(--danger);
+    }
+
+    /* Terminal container */
+    #terminal-container {
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    #terminal {
+      width: 100%;
+      height: 100%;
+      /* Override wterm theme */
+      --term-bg: #04060a;
+      --term-fg: #a8c4ac;
+      --term-cursor: #00e87a;
+      --term-color-0:  #0d1a10;
+      --term-color-1:  #ff4545;
+      --term-color-2:  #00e87a;
+      --term-color-3:  #e8a020;
+      --term-color-4:  #4a9eff;
+      --term-color-5:  #c060c0;
+      --term-color-6:  #00c8a0;
+      --term-color-7:  #a8c4ac;
+      --term-color-8:  #2a4030;
+      --term-color-9:  #ff6060;
+      --term-color-10: #18ff90;
+      --term-color-11: #ffbe40;
+      --term-color-12: #70b8ff;
+      --term-color-13: #d880d8;
+      --term-color-14: #40e0c0;
+      --term-color-15: #d0e8d4;
+      --term-font-family: 'Azeret Mono', 'Courier New', monospace;
+      --term-font-size: 13px;
+      --term-line-height: 1.5;
+      --term-row-height: 20px;
+    }
+
+    /* Credentials Modal */
+    .creds-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 12, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      backdrop-filter: blur(10px);
+    }
+
+    .creds-box {
+      background: var(--surface);
+      border: 1px solid #274460;
+      border-radius: 6px;
+      width: 360px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,232,122,0.06);
+    }
+
+    .creds-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .creds-header-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+
+    .creds-title {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .creds-target {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .creds-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .creds-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .creds-field label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .creds-field input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+
+    .creds-field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,232,122,0.1);
+    }
+
+    .creds-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .creds-footer {
+      padding: 14px 18px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+    }
+
+    .creds-submit {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #021a0a;
+      border: none;
+      border-radius: 3px;
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .creds-submit:hover {
+      background: #18ffaa;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <div id="topbar">
+    <span class="tb-brand">NW</span>
+    <span class="tb-label">SSH</span>
+    <span class="tb-sep">›</span>
+    <span class="tb-host" id="host-label">—</span>
+    <div id="status-badge">
+      <span id="conn-dot"></span>
+      <span id="conn-text">Connessione…</span>
+    </div>
+  </div>
+
+  <div id="terminal-container">
+    <div id="terminal" role="textbox" aria-label="SSH Terminal" aria-multiline="true" aria-roledescription="terminal"></div>
+  </div>
+
+  <!-- Credentials Modal -->
+  <div class="creds-overlay" id="creds-modal">
+    <div class="creds-box">
+      <div class="creds-header">
+        <span class="creds-header-dot"></span>
+        <span class="creds-title">SSH Connection</span>
+        <span class="creds-target" id="modal-host"></span>
+      </div>
+      <div class="creds-body">
+        <div class="creds-row">
+          <div class="creds-field">
+            <label>Utente</label>
+            <input id="creds-user" type="text" value="root" autocomplete="username" />
+          </div>
+          <div class="creds-field">
+            <label>Porta</label>
+            <input id="creds-port" type="number" value="22" />
+          </div>
+        </div>
+        <div class="creds-field">
+          <label>Password</label>
+          <input id="creds-pass" type="password" autocomplete="current-password" />
+        </div>
+      </div>
+      <div class="creds-footer">
+        <button class="creds-submit" id="creds-submit">Connect →</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/static/terminal.js"></script>
+</body>
+</html>

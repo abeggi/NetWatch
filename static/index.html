@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Netwatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header class="header">
+      <div class="logo">
+        <span class="logo-mark">NETWATCH</span>
+        <span class="logo-sep"></span>
+        <span class="logo-sub">LAN SSH Scanner</span>
+      </div>
+      <div class="header-right">
+        <a href="/static/settings.html" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Config
+        </a>
+        <button class="btn btn-primary" id="scan-btn">
+          <svg id="scan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          Scan
+        </button>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- Quick Connect -->
+      <div class="qc-bar" id="quick-connect-section">
+        <div class="qc-tag">
+          <span class="qc-tag-dot"></span>
+          Quick Connect
+        </div>
+        <div class="qc-inputs">
+          <span class="qc-prompt">›</span>
+          <input type="text" id="ip-first-three" class="qc-input-prefix" value="192.168.1" autocomplete="off" spellcheck="false" />
+          <span class="qc-dot">.</span>
+          <input type="text" id="ip-last-octet" class="qc-input-last" inputmode="numeric" pattern="[0-9]*" placeholder="x" />
+          <span class="qc-sep">:</span>
+          <input type="text" id="qc-port" class="qc-input-port" inputmode="numeric" value="22" />
+        </div>
+        <button class="qc-btn" id="quick-connect-btn">Connect →</button>
+      </div>
+
+      <!-- Status -->
+      <div class="status-bar">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Pronto — premi Scan per scoprire i dispositivi in rete.</span>
+        <span class="host-count" id="host-count"></span>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar-wrap" id="progress-wrap" style="display:none">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+
+      <!-- Host Grid -->
+      <div class="grid-wrapper">
+        <div id="host-grid" class="host-grid"></div>
+        <div class="empty-state" id="empty-state">
+          <pre class="empty-ascii">
+  ┌─────────────────────────────┐
+  │  ·  ·  ·  ·  ·  ·  ·  ·   │
+  │  ·  ·  ·  ·  ·  ·  ·  ·   │
+  │  ·  ·  ·  ·  ·  ·  ·  ·   │
+  └─────────────────────────────┘</pre>
+          <p class="empty-msg">Sto cercando gli host.<br>La scansione scopre i dispositivi SSH sulla rete.</p>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <span>Andrea Beggi</span>
+      <span class="footer-sep">·</span>
+      <a href="https://github.com/abeggi/terminal" target="_blank" rel="noopener" class="footer-link">
+        github.com/abeggi/terminal
+      </a>
+    </footer>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

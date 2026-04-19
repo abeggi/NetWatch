@@ -1,0 +1,6 @@
+{
+  "subnet": "192.168.1.0/24",
+  "ssh_user": "root",
+  "ssh_password": "",
+  "ssh_port": 22
+}

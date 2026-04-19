@@ -1,0 +1,56 @@
+# API Keys e credenziali
+.env
+.env.*
+*.key
+*_key
+*_secret
+credentials.json
+config/secrets.yml
+secrets.yml
+
+# File specifici con chiavi (aggiungi qui i tuoi)
+github_token.txt
+api_keys.conf
+setup-git-repo.sh
+
+# File di configurazione locale
+settings.json
+scan_cache.json
+
+# File di log
+server.log
+*.log
+logs/
+
+# Directory e file temporanei
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Aider
+.aider*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+.aider*
+.aider*
+.aider*

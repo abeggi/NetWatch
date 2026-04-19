@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Config — Netwatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header class="header">
+      <div class="logo">
+        <span class="logo-mark">NETWATCH</span>
+        <span class="logo-sep"></span>
+        <span class="logo-sub">Configuration</span>
+      </div>
+      <div class="header-right">
+        <a href="/" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Dashboard
+        </a>
+      </div>
+    </header>
+
+    <main class="main settings-main">
+
+      <div class="settings-page">
+
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="settings-block-title">Network</span>
+            <span class="settings-block-desc">Subnet da scansionare alla ricerca di host SSH.</span>
+          </div>
+          <div class="settings-block-body">
+            <div class="field">
+              <label>Subnet di Scansione</label>
+              <input id="set-subnet" type="text" placeholder="192.168.1.0/24" autocomplete="off" spellcheck="false" />
+              <span class="field-hint">Notazione CIDR — es. <code>192.168.1.0/24</code></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-block">
+          <div class="settings-block-header">
+            <span class="settings-block-title">SSH Credentials</span>
+            <span class="settings-block-desc">Credenziali predefinite pre-compilate nel terminale SSH.</span>
+          </div>
+          <div class="settings-block-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Utente</label>
+                <input id="set-user" type="text" placeholder="root" autocomplete="off" spellcheck="false" />
+              </div>
+              <div class="field">
+                <label>Porta SSH</label>
+                <input id="set-port" type="number" placeholder="22" min="1" max="65535" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input id="set-pass" type="password" autocomplete="current-password" />
+              <span class="field-hint">Salvata in chiaro nel file <code>settings.json</code> sul server.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <a href="/" class="btn btn-ghost">Annulla</a>
+          <button class="btn btn-primary" id="save-btn">Salva</button>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <span>Andrea Beggi</span>
+      <span class="footer-sep">·</span>
+      <a href="https://github.com/abeggi/terminal" target="_blank" rel="noopener" class="footer-link">
+        github.com/abeggi/terminal
+      </a>
+    </footer>
+
+  </div>
+
+  <script src="/static/settings.js"></script>
+</body>
+</html>
