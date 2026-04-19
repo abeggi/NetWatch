@@ -2,6 +2,8 @@
 
 A single-page application for scanning the local network, discovering SSH-enabled hosts, and connecting to them via an integrated browser terminal.
 
+![NetWatch Dashboard](static/screenshot.png)
+
 ## Features
 
 * **Dark UI with green accents** — minimal monospace design using Azeret Mono and Bebas Neue
