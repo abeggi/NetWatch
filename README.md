@@ -137,6 +137,10 @@ which nmap   # verify it's on PATH
 
 **WebSocket not connecting** — ensure the server is running and check `server.log` for errors.
 
+## Security
+
+Use a reverse proxy, never expose to the internet.
+
 ## License
 
 Released for personal and educational use. See the LICENSE file for details.
