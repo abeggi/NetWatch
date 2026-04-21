@@ -1,551 +1,731 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netwatch — LAN SSH Scanner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Azeret+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netwatch — LAN SSH Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Azeret+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --green: #00ff88;
-    --green-dim: #00cc6a;
-    --green-faint: rgba(0,255,136,0.08);
-    --green-glow: rgba(0,255,136,0.18);
-    --bg: #0a0c0b;
-    --bg2: #0f1210;
-    --bg3: #141814;
-    --border: rgba(0,255,136,0.15);
-    --border-bright: rgba(0,255,136,0.35);
-    --text: #c8d4cc;
-    --text-dim: #637068;
-    --font-mono: 'Azeret Mono', monospace;
-    --font-display: 'Bebas Neue', sans-serif;
-  }
+    :root {
+      --green: #00ff88;
+      --green-dim: #00cc6a;
+      --green-faint: rgba(0, 255, 136, 0.08);
+      --green-glow: rgba(0, 255, 136, 0.18);
+      --bg: #0a0c0b;
+      --bg2: #0f1210;
+      --bg3: #141814;
+      --border: rgba(0, 255, 136, 0.15);
+      --border-bright: rgba(0, 255, 136, 0.35);
+      --text: #c8d4cc;
+      --text-dim: #637068;
+      --font-mono: 'Azeret Mono', monospace;
+      --font-display: 'Bebas Neue', sans-serif;
+    }
 
-  html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
 
-  /* scanline overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 1000;
-  }
+    /* scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.03) 2px,
+          rgba(0, 0, 0, 0.03) 4px);
+      pointer-events: none;
+      z-index: 1000;
+    }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 3rem;
-    height: 56px;
-    background: rgba(10,12,11,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      height: 56px;
+      background: rgba(10, 12, 11, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
 
-  .nav-logo {
-    font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--green);
-    text-decoration: none;
-  }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-decoration: none;
+    }
 
-  .nav-links {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-  }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
 
-  .nav-links a {
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: 12px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
 
-  .nav-links a:hover { color: var(--green); }
+    .nav-links a:hover {
+      color: var(--green);
+    }
 
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 8rem 3rem 4rem;
-    position: relative;
-    overflow: hidden;
-  }
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 3rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-  /* ── TERMINAL MOCKUP ── */
-  .terminal-wrap {
-    position: relative;
-    margin-top: 5rem;
-    animation: fadeIn 0.8s 0.4s ease both;
-  }
+    /* ── TERMINAL MOCKUP ── */
+    .terminal-wrap {
+      position: relative;
+      margin-top: 5rem;
+      animation: fadeIn 0.8s 0.4s ease both;
+    }
 
-  .terminal {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    font-size: 13px;
-    overflow: hidden;
-  }
+    .terminal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      overflow: hidden;
+    }
 
-  .terminal-bar {
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+    .terminal-bar {
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-  .dot { width: 10px; height: 10px; border-radius: 50%; }
-  .dot-r { background: #ff5f57; }
-  .dot-y { background: #febc2e; }
-  .dot-g { background: #28c840; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
 
-  .terminal-title {
-    margin-left: 8px;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-  }
+    .dot-r {
+      background: #ff5f57;
+    }
 
-  .terminal-body { padding: 20px 24px; }
+    .dot-y {
+      background: #febc2e;
+    }
 
-  .line { display: block; margin-bottom: 4px; white-space: pre; }
-  .prompt { color: var(--green); }
-  .cmd { color: #fff; }
-  .out { color: var(--text-dim); }
-  .out-green { color: var(--green-dim); }
-  .out-bright { color: var(--text); }
-  .cursor {
-    display: inline-block;
-    width: 8px; height: 14px;
-    background: var(--green);
-    vertical-align: middle;
-    animation: blink 1s step-end infinite;
-  }
+    .dot-g {
+      background: #28c840;
+    }
 
-  .hero-corner {
-    position: absolute;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-  }
-  .hero-corner.tl { top: 6rem; left: 3rem; }
-  .hero-corner.tr { top: 6rem; right: 3rem; text-align: right; }
+    .terminal-title {
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
 
-  .hero-content { position: relative; max-width: 900px; }
+    .terminal-body {
+      padding: 20px 24px;
+    }
 
-  .hero-tag {
-    display: inline-block;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--green);
-    border: 1px solid var(--border-bright);
-    padding: 4px 12px;
-    margin-bottom: 2rem;
-    animation: fadeIn 0.6s ease both;
-  }
+    .line {
+      display: block;
+      margin-bottom: 4px;
+      white-space: pre;
+    }
 
-  h1 {
-    font-family: var(--font-display);
-    font-size: clamp(64px, 12vw, 140px);
-    line-height: 0.9;
-    letter-spacing: 4px;
-    color: #fff;
-    animation: fadeIn 0.6s 0.1s ease both;
-  }
+    .prompt {
+      color: var(--green);
+    }
 
-  h1 span { color: var(--green); }
+    .cmd {
+      color: #fff;
+    }
 
-  .hero-sub {
-    margin-top: 2rem;
-    font-size: 15px;
-    color: var(--text-dim);
-    max-width: 520px;
-    line-height: 1.8;
-    animation: fadeIn 0.6s 0.2s ease both;
-  }
+    .out {
+      color: var(--text-dim);
+    }
 
-  .hero-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 3rem;
-    flex-wrap: wrap;
-    animation: fadeIn 0.6s 0.3s ease both;
-  }
+    .out-green {
+      color: var(--green-dim);
+    }
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 28px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
+    .out-bright {
+      color: var(--text);
+    }
 
-  .btn-primary {
-    background: var(--green);
-    color: #0a0c0b;
-    font-weight: 500;
-  }
-  .btn-primary:hover { background: #fff; }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--green);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
 
-  .btn-secondary {
-    background: transparent;
-    color: var(--green);
-    border: 1px solid var(--border-bright);
-  }
-  .btn-secondary:hover {
-    background: var(--green-faint);
-    border-color: var(--green);
-  }
+    .hero-corner {
+      position: absolute;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
 
-  /* ── FEATURES ── */
-  section { padding: 6rem 3rem; }
+    .hero-corner.tl {
+      top: 6rem;
+      left: 3rem;
+    }
 
-  .section-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 3rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    max-width: 80px;
-    height: 1px;
-    background: var(--border-bright);
-  }
+    .hero-corner.tr {
+      top: 6rem;
+      right: 3rem;
+      text-align: right;
+    }
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
+    .hero-content {
+      position: relative;
+      max-width: 900px;
+    }
 
-  .feature {
-    background: var(--bg);
-    padding: 2rem;
-    transition: background 0.2s;
-  }
-  .feature:hover { background: var(--green-faint); }
+    .hero-tag {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid var(--border-bright);
+      padding: 4px 12px;
+      margin-bottom: 2rem;
+      animation: fadeIn 0.6s ease both;
+    }
 
-  .feature-icon {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--green);
-    margin-bottom: 1rem;
-    font-weight: 500;
-  }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 12vw, 140px);
+      line-height: 0.9;
+      letter-spacing: 4px;
+      color: #fff;
+      animation: fadeIn 0.6s 0.1s ease both;
+    }
 
-  .feature h3 {
-    font-family: var(--font-display);
-    font-size: 20px;
-    letter-spacing: 1px;
-    color: #fff;
-    margin-bottom: 0.75rem;
-    font-weight: 400;
-  }
+    h1 span {
+      color: var(--green);
+    }
 
-  .feature p {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.8;
-  }
+    .hero-sub {
+      margin-top: 2rem;
+      font-size: 15px;
+      color: var(--text-dim);
+      max-width: 520px;
+      line-height: 1.8;
+      animation: fadeIn 0.6s 0.2s ease both;
+    }
 
-  /* ── INSTALL ── */
-  .install-section { border-top: 1px solid var(--border); }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 3rem;
+      flex-wrap: wrap;
+      animation: fadeIn 0.6s 0.3s ease both;
+    }
 
-  .install-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
 
-  @media (max-width: 768px) {
-    .install-grid { grid-template-columns: 1fr; }
-    nav { padding: 0 1.5rem; }
-    section, .hero { padding-left: 1.5rem; padding-right: 1.5rem; }
-    .nav-links { display: none; }
-  }
+    .btn-primary {
+      background: var(--green);
+      color: #0a0c0b;
+      font-weight: 500;
+    }
 
-  .install-text h2 {
-    font-family: var(--font-display);
-    font-size: 52px;
-    letter-spacing: 2px;
-    color: #fff;
-    line-height: 1;
-    margin-bottom: 1.5rem;
-    font-weight: 400;
-  }
+    .btn-primary:hover {
+      background: #fff;
+    }
 
-  .install-text p {
-    color: var(--text-dim);
-    font-size: 13px;
-    line-height: 1.9;
-  }
+    .btn-secondary {
+      background: transparent;
+      color: var(--green);
+      border: 1px solid var(--border-bright);
+    }
 
-  .install-text p + p { margin-top: 1rem; }
+    .btn-secondary:hover {
+      background: var(--green-faint);
+      border-color: var(--green);
+    }
 
-  .code-block {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    padding: 1.5rem;
-  }
+    /* ── FEATURES ── */
+    section {
+      padding: 6rem 3rem;
+    }
 
-  .code-block .line { color: var(--text-dim); }
-  .code-block .line .prompt { color: var(--green); user-select: none; }
-  .code-block .line .cmd { color: #fff; }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  /* ── STACK ── */
-  .stack-section { border-top: 1px solid var(--border); }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      max-width: 80px;
+      height: 1px;
+      background: var(--border-bright);
+    }
 
-  .stack-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    margin-top: 0;
-  }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
 
-  .stack-item {
-    background: var(--bg);
-    padding: 1.5rem 2rem;
-    flex: 1;
-    min-width: 160px;
-  }
+    .feature {
+      background: var(--bg);
+      padding: 2rem;
+      transition: background 0.2s;
+    }
 
-  .stack-item .label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 0.5rem;
-  }
+    .feature:hover {
+      background: var(--green-faint);
+    }
 
-  .stack-item .value {
-    font-size: 15px;
-    color: var(--text);
-  }
+    .feature-icon {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--green);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 2rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: gap;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
+    .feature h3 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      font-weight: 400;
+    }
 
-  footer a {
-    color: var(--green);
-    text-decoration: none;
-  }
-  footer a:hover { text-decoration: underline; }
+    .feature p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
 
-  /* ── ANIMATIONS ── */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+    /* ── INSTALL ── */
+    .install-section {
+      border-top: 1px solid var(--border);
+    }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
 
-  /* ── TYPING ANIMATION ── */
-  .typed { overflow: hidden; white-space: pre; }
-  .typed-1 { animation: type 0.8s 1.0s steps(40) both; }
-  .typed-2 { animation: type 0.6s 1.9s steps(40) both; }
-  .typed-3 { animation: type 0.5s 2.6s steps(40) both; }
-  .typed-4 { animation: type 0.4s 3.2s steps(40) both; }
-  .typed-5 { animation: type 0.4s 3.7s steps(40) both; }
-  .typed-6 { animation: type 0.6s 4.2s steps(40) both; }
-  .typed-7 { animation: type 0.3s 4.9s steps(40) both; }
+    @media (max-width: 768px) {
+      .install-grid {
+        grid-template-columns: 1fr;
+      }
 
-  @keyframes type {
-    from { max-width: 0; }
-    to   { max-width: 100%; }
-  }
-</style>
+      nav {
+        padding: 0 1.5rem;
+      }
+
+      section,
+      .hero {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    .install-text h2 {
+      font-family: var(--font-display);
+      font-size: 52px;
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+    }
+
+    .install-text p {
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .install-text p+p {
+      margin-top: 1rem;
+    }
+
+    .code-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+
+    .code-block .line {
+      color: var(--text-dim);
+    }
+
+    .code-block .line .prompt {
+      color: var(--green);
+      user-select: none;
+    }
+
+    .code-block .line .cmd {
+      color: #fff;
+    }
+
+    /* ── STACK ── */
+    .stack-section {
+      border-top: 1px solid var(--border);
+    }
+
+    .stack-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 0;
+    }
+
+    .stack-item {
+      background: var(--bg);
+      padding: 1.5rem 2rem;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .stack-item .label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .stack-item .value {
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    footer a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* ── TYPING ANIMATION ── */
+    .typed {
+      overflow: hidden;
+      white-space: pre;
+    }
+
+    .typed-1 {
+      animation: type 0.8s 1.0s steps(40) both;
+    }
+
+    .typed-2 {
+      animation: type 0.6s 1.9s steps(40) both;
+    }
+
+    .typed-3 {
+      animation: type 0.5s 2.6s steps(40) both;
+    }
+
+    .typed-4 {
+      animation: type 0.4s 3.2s steps(40) both;
+    }
+
+    .typed-5 {
+      animation: type 0.4s 3.7s steps(40) both;
+    }
+
+    .typed-6 {
+      animation: type 0.6s 4.2s steps(40) both;
+    }
+
+    .typed-7 {
+      animation: type 0.3s 4.9s steps(40) both;
+    }
+
+    @keyframes type {
+      from {
+        max-width: 0;
+      }
+
+      to {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<nav>
-  <a class="nav-logo" href="#">Netwatch</a>
-  <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#install">Install</a></li>
-    <li><a href="https://github.com/abeggi/terminal">GitHub</a></li>
-  </ul>
-</nav>
+  <nav>
+    <a class="nav-logo" href="#">Netwatch</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="https://github.com/abeggi/NetWatch">GitHub</a></li>
+    </ul>
+  </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-corner tl">// LAN SSH SCANNER v0.1.0</div>
-  <div class="hero-corner tr">PYTHON · FASTAPI · WEBSOCKETS</div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-corner tl">// LAN SSH SCANNER v0.1.0</div>
+    <div class="hero-corner tr">PYTHON · FASTAPI · WEBSOCKETS</div>
 
-  <div class="hero-content">
-    <div class="hero-tag">Open source · Self-hosted</div>
-    <h1>NET<span>WATCH</span></h1>
-    <p class="hero-sub">
-      Scan your local network, discover SSH-enabled hosts, and connect via an integrated browser terminal — no client software required.
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="https://github.com/abeggi/terminal">→ View on GitHub</a>
-      <a class="btn btn-secondary" href="#install">Quick install</a>
-    </div>
-  </div>
-
-  <div class="terminal-wrap">
-    <div class="terminal">
-      <div class="terminal-bar">
-        <div class="dot dot-r"></div>
-        <div class="dot dot-y"></div>
-        <div class="dot dot-g"></div>
-        <span class="terminal-title">netwatch — bash</span>
-      </div>
-      <div class="terminal-body">
-        <span class="line typed typed-1"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh install</span></span>
-        <span class="line typed typed-2"><span class="out-green">[OK]    Servizio installato.</span></span>
-        <span class="line typed typed-3"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh enable && sudo ./manage.sh service-start</span></span>
-        <span class="line typed typed-4"><span class="out-green">[OK]    Autostart abilitato.</span></span>
-        <span class="line typed typed-5"><span class="out-green">[OK]    Servizio avviato via systemd.</span></span>
-        <span class="line typed typed-6"><span class="out-bright">        Scanning 192.168.1.0/24 ... found 12 hosts with SSH open</span></span>
-        <span class="line typed typed-7"><span class="prompt">$ </span><span class="cursor"></span></span>
+    <div class="hero-content">
+      <div class="hero-tag">Open source · Self-hosted</div>
+      <h1>NET<span>WATCH</span></h1>
+      <p class="hero-sub">
+        Scan your local network, discover SSH-enabled hosts, and connect via an integrated browser terminal — no client
+        software required.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/abeggi/NetWatch">→ View on GitHub</a>
+        <a class="btn btn-secondary" href="#install">Quick install</a>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- FEATURES -->
-<section id="features">
-  <div class="section-label">Features</div>
-  <div class="features-grid">
-    <div class="feature">
-      <div class="feature-icon">01 // SCAN</div>
-      <h3>Intelligent scanning</h3>
-      <p>Detects hosts on your subnet with port 22 open via Nmap. Resolves hostnames through reverse DNS with SSH fallback.</p>
+    <div class="terminal-wrap">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="terminal-title">netwatch — bash</span>
+        </div>
+        <div class="terminal-body">
+          <span class="line typed typed-1"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh
+              install</span></span>
+          <span class="line typed typed-2"><span class="out-green">[OK] Servizio installato.</span></span>
+          <span class="line typed typed-3"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh enable &&
+              sudo ./manage.sh service-start</span></span>
+          <span class="line typed typed-4"><span class="out-green">[OK] Autostart abilitato.</span></span>
+          <span class="line typed typed-5"><span class="out-green">[OK] Servizio avviato via systemd.</span></span>
+          <span class="line typed typed-6"><span class="out-bright"> Scanning 192.168.1.0/24 ... found 12 hosts with SSH
+              open</span></span>
+          <span class="line typed typed-7"><span class="prompt">$ </span><span class="cursor"></span></span>
+        </div>
+      </div>
     </div>
-    <div class="feature">
-      <div class="feature-icon">02 // TERMINAL</div>
-      <h3>Browser SSH terminal</h3>
-      <p>Click any host card to open a full interactive shell in a new tab. Built on WebSockets + Paramiko. No extra client needed.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">03 // CACHE</div>
-      <h3>Persistent cache</h3>
-      <p>Last scan results are displayed immediately on load. The grid is always populated, even before a new scan completes.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">04 // CONNECT</div>
-      <h3>Quick-Connect bar</h3>
-      <p>Manually enter any IP to open a terminal without scanning first. Useful for known hosts outside the current subnet.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">05 // CONFIG</div>
-      <h3>Settings modal</h3>
-      <p>Configure subnet and default SSH credentials directly from the UI. Persisted to <code>settings.json</code> on disk.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">06 // DAEMON</div>
-      <h3>systemd service</h3>
-      <p>Run as a system daemon with auto-restart on failure and autostart on boot. Managed via the bundled <code>manage.sh</code> script.</p>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- INSTALL -->
-<section id="install" class="install-section">
-  <div class="section-label">Installation</div>
-  <div class="install-grid">
-    <div class="install-text">
-      <h2>Up in three commands.</h2>
-      <p>Clone the repo, install Python dependencies, and optionally configure your subnet and SSH credentials.</p>
-      <p>Nmap must be present on the host system. The <code>manage.sh</code> script handles the full systemd lifecycle: install, enable, start, stop, status.</p>
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">Features</div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">01 // SCAN</div>
+        <h3>Intelligent scanning</h3>
+        <p>Detects hosts on your subnet with port 22 open via Nmap. Resolves hostnames through reverse DNS with SSH
+          fallback.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">02 // TERMINAL</div>
+        <h3>Browser SSH terminal</h3>
+        <p>Click any host card to open a full interactive shell in a new tab. Built on WebSockets + Paramiko. No extra
+          client needed.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">03 // CACHE</div>
+        <h3>Persistent cache</h3>
+        <p>Last scan results are displayed immediately on load. The grid is always populated, even before a new scan
+          completes.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">04 // CONNECT</div>
+        <h3>Quick-Connect bar</h3>
+        <p>Manually enter any IP to open a terminal without scanning first. Useful for known hosts outside the current
+          subnet.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">05 // CONFIG</div>
+        <h3>Settings modal</h3>
+        <p>Configure subnet and default SSH credentials directly from the UI. Persisted to <code>settings.json</code> on
+          disk.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">06 // DAEMON</div>
+        <h3>systemd service</h3>
+        <p>Run as a system daemon with auto-restart on failure and autostart on boot. Managed via the bundled
+          <code>manage.sh</code> script.</p>
+      </div>
     </div>
-    <div class="code-block">
-      <span class="line"><span class="prompt">$ </span><span class="cmd">git clone https://github.com/abeggi/terminal</span></span>
-      <span class="line"><span class="prompt">$ </span><span class="cmd">cd terminal && pip install -r requirements.txt</span></span>
-      <span class="line"><span class="prompt">$ </span><span class="cmd">cp settings.example.json settings.json</span></span>
-      <span class="line out">&nbsp;</span>
-      <span class="line out"># run as systemd service</span>
-      <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh install</span></span>
-      <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh enable</span></span>
-      <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh service-start</span></span>
-      <span class="line out">&nbsp;</span>
-      <span class="line out-green"># open http://localhost:8000</span>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install" class="install-section">
+    <div class="section-label">Installation</div>
+    <div class="install-grid">
+      <div class="install-text">
+        <h2>Up in three commands.</h2>
+        <p>Clone the repo, install Python dependencies, and optionally configure your subnet and SSH credentials.</p>
+        <p>Nmap must be present on the host system. The <code>manage.sh</code> script handles the full systemd
+          lifecycle: install, enable, start, stop, status.</p>
+      </div>
+      <div class="code-block">
+        <span class="line"><span class="prompt">$ </span><span class="cmd">git clone
+            https://github.com/abeggi/NetWatch</span></span>
+        <span class="line"><span class="prompt">$ </span><span class="cmd">cd terminal && pip install -r
+            requirements.txt</span></span>
+        <span class="line"><span class="prompt">$ </span><span class="cmd">cp settings.example.json
+            settings.json</span></span>
+        <span class="line out">&nbsp;</span>
+        <span class="line out"># run as systemd service</span>
+        <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh install</span></span>
+        <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh enable</span></span>
+        <span class="line"><span class="prompt">$ </span><span class="cmd">sudo ./manage.sh service-start</span></span>
+        <span class="line out">&nbsp;</span>
+        <span class="line out-green"># open http://localhost:8000</span>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- STACK -->
-<section class="stack-section">
-  <div class="section-label">Stack</div>
-  <div class="stack-list">
-    <div class="stack-item"><div class="label">Backend</div><div class="value">FastAPI · Uvicorn · Paramiko</div></div>
-    <div class="stack-item"><div class="label">Frontend</div><div class="value">Vanilla JS · CSS3 · HTML5</div></div>
-    <div class="stack-item"><div class="label">Terminal</div><div class="value">wterm (WASM)</div></div>
-    <div class="stack-item"><div class="label">Scanning</div><div class="value">Nmap · python-nmap</div></div>
-    <div class="stack-item"><div class="label">Transport</div><div class="value">WebSockets</div></div>
-    <div class="stack-item"><div class="label">Platform</div><div class="value">Linux · Python 3.8+</div></div>
-  </div>
-</section>
+  <!-- STACK -->
+  <section class="stack-section">
+    <div class="section-label">Stack</div>
+    <div class="stack-list">
+      <div class="stack-item">
+        <div class="label">Backend</div>
+        <div class="value">FastAPI · Uvicorn · Paramiko</div>
+      </div>
+      <div class="stack-item">
+        <div class="label">Frontend</div>
+        <div class="value">Vanilla JS · CSS3 · HTML5</div>
+      </div>
+      <div class="stack-item">
+        <div class="label">Terminal</div>
+        <div class="value">wterm (WASM)</div>
+      </div>
+      <div class="stack-item">
+        <div class="label">Scanning</div>
+        <div class="value">Nmap · python-nmap</div>
+      </div>
+      <div class="stack-item">
+        <div class="label">Transport</div>
+        <div class="value">WebSockets</div>
+      </div>
+      <div class="stack-item">
+        <div class="label">Platform</div>
+        <div class="value">Linux · Python 3.8+</div>
+      </div>
+    </div>
+  </section>
 
-<!-- FOOTER -->
-<footer>
-  <span>Netwatch — designed for private local networks. Only scan networks you are authorized to access.</span>
-  <span><a href="https://github.com/abeggi/terminal">github.com/abeggi/terminal</a></span>
-</footer>
+  <!-- FOOTER -->
+  <footer>
+    <span>Netwatch — designed for private local networks. Only scan networks you are authorized to access.</span>
+    <span><a href="https://github.com/abeggi/terminal">github.com/abeggi/NetWatch</a></span>
+  </footer>
 
 </body>
+
 </html>
