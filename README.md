@@ -21,7 +21,7 @@ A single-page application for scanning the local network, discovering SSH-enable
 
 * **Backend**: FastAPI, Uvicorn, Paramiko, python-nmap
 * **Frontend**: Vanilla JS, CSS3, HTML5
-* **Terminal**: wterm (WASM-based terminal renderer)
+* **Terminal**: xterm.js
 * **Network scanning**: Nmap (system dependency)
 * **Real-time communication**: WebSockets
 

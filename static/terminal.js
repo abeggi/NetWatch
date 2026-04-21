@@ -1,5 +1,4 @@
-/* ─── terminal.js – SSH WebSocket bridge via wterm ──────────── */
-import { WTerm } from "/static/wterm/wterm.js";
+/* ─── terminal.js – SSH WebSocket bridge via xterm ──────────── */
 
 (async function () {
     'use strict';
@@ -46,26 +45,46 @@ import { WTerm } from "/static/wterm/wterm.js";
 
     loadDefaultSettings();
 
-    /* ── Init wterm ───────────────────────────────────────────── */
-    const termEl = document.getElementById('terminal');
-    const term = new WTerm(termEl, {
-        autoResize: true,
-        onData: (data) => {
-            if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
-        },
-        onResize: (cols, rows) => {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'resize', cols, rows }));
-            }
-        },
-        onTitle: (title) => {
-            document.title = title ? `${title} – SSH` : `SSH – ${host}`;
-        },
+    /* ── Init xterm ───────────────────────────────────────────── */
+    const termEl = document.getElementById('terminal-container');
+    termEl.innerHTML = '';
+    
+    // We recreate the premium styling config with xterm properties
+    const term = new Terminal({
+        fontFamily: "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace",
+        fontSize: 14,
+        cursorBlink: true,
+        theme: { background: '#1e1e1e' }
     });
 
-    await term.init();
+    const fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(termEl);
+    
+    // Defer fit so that the DOM has established the correct layout container
+    setTimeout(() => {
+        fitAddon.fit();
+    }, 50);
 
     let ws = null;
+
+    term.onData(data => {
+        if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
+    });
+
+    term.onResize(size => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'resize', cols: size.cols, rows: size.rows }));
+        }
+    });
+
+    term.onTitleChange(title => {
+        document.title = title ? `${title} – SSH` : `SSH – ${host}`;
+    });
+
+    window.addEventListener('resize', () => {
+        fitAddon.fit();
+    });
 
     /* ── Connect to SSH WebSocket ────────────────────────────────── */
     function connect(username, password, port) {

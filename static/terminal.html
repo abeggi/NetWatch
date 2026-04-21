@@ -6,22 +6,24 @@
   <title>SSH — Netwatch</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/wterm/terminal.css" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Azeret+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #04060a;
-      --surface:  #09101a;
-      --surface2: #0e1822;
-      --border:   #1a2d42;
+      --bg:       #000000;
+      --surface:  #1e1e1e;
+      --surface2: #2d2d2d;
+      --border:   #333333;
       --accent:   #00e87a;
       --accent-glow: rgba(0,232,122,0.15);
-      --text:     #a8c4ac;
-      --text-dim: #466050;
+      --text:     #cccccc;
+      --text-dim: #777777;
       --danger:   #ff4545;
-      --font:     'Azeret Mono', 'Courier New', monospace;
+      --font:     'JetBrains Mono', 'Menlo', 'Courier New', monospace;
       --display:  'Bebas Neue', sans-serif;
     }
 
@@ -34,18 +36,7 @@
       display: flex;
       flex-direction: column;
     }
-
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px
-      );
-      pointer-events: none;
-      z-index: 9998;
-    }
+    /* Removed scanlines for clarity */
 
     /* Top bar */
     #topbar {
@@ -118,41 +109,12 @@
       background: var(--danger);
     }
 
-    /* Terminal container */
     #terminal-container {
       flex: 1;
       overflow: hidden;
-      background: var(--bg);
+      background: #1e1e1e;
     }
 
-    #terminal {
-      width: 100%;
-      height: 100%;
-      /* Override wterm theme */
-      --term-bg: #04060a;
-      --term-fg: #a8c4ac;
-      --term-cursor: #00e87a;
-      --term-color-0:  #0d1a10;
-      --term-color-1:  #ff4545;
-      --term-color-2:  #00e87a;
-      --term-color-3:  #e8a020;
-      --term-color-4:  #4a9eff;
-      --term-color-5:  #c060c0;
-      --term-color-6:  #00c8a0;
-      --term-color-7:  #a8c4ac;
-      --term-color-8:  #2a4030;
-      --term-color-9:  #ff6060;
-      --term-color-10: #18ff90;
-      --term-color-11: #ffbe40;
-      --term-color-12: #70b8ff;
-      --term-color-13: #d880d8;
-      --term-color-14: #40e0c0;
-      --term-color-15: #d0e8d4;
-      --term-font-family: 'Azeret Mono', 'Courier New', monospace;
-      --term-font-size: 13px;
-      --term-line-height: 1.5;
-      --term-row-height: 20px;
-    }
 
     /* Credentials Modal */
     .creds-overlay {
@@ -297,9 +259,7 @@
     </div>
   </div>
 
-  <div id="terminal-container">
-    <div id="terminal" role="textbox" aria-label="SSH Terminal" aria-multiline="true" aria-roledescription="terminal"></div>
-  </div>
+  <div id="terminal-container" role="textbox" aria-label="SSH Terminal" aria-multiline="true" aria-roledescription="terminal"></div>
 
   <!-- Credentials Modal -->
   <div class="creds-overlay" id="creds-modal">
