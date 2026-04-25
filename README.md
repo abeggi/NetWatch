@@ -7,12 +7,13 @@ A single-page application for scanning the local network, discovering SSH-enable
 ## Features
 
 * **Dark UI with green accents** — minimal monospace design using Azeret Mono and Bebas Neue
-* **Dynamic host grid** — cards showing hostname (bold) and IP, sorted numerically by IP
+* **Dynamic host grid** — numbered cards showing hostname and IP, sorted numerically by IP
 * **Intelligent scanning** — detects hosts on the subnet with port 22 open via Nmap
-* **Hostname resolution** — resolves hostnames via Nmap reverse DNS with SSH fallback
+* **Hostname resolution** — resolves hostnames via Nmap reverse DNS with SSH fallback; ANSI escape codes in SSH output are stripped automatically
 * **Persistent cache** — displays the last scan results on load
 * **Integrated SSH terminal** — click a host card to open an interactive WebSocket terminal in a new tab
-* **Quick-Connect bar** — manually enter any IP to open a terminal without scanning
+* **Quick Search** — filter the host grid in real time by hostname or IP
+* **Quick Connect** — manually enter any IP to open a terminal without scanning
 * **Persistent settings** — configure subnet and default SSH credentials saved to `settings.json`
 * **Automatic session management** — terminal tab closes automatically when the SSH session ends
 * **systemd service support** — run as a daemon with auto-restart on boot
@@ -107,10 +108,11 @@ sudo systemctl disable netwatch   # disable autostart
 
 1. Open `http://localhost:8000` in your browser
 2. The grid shows hosts from the last scan (if cached)
-3. Click **"New scan"** to scan the configured subnet
-4. Click **Settings** to configure subnet and SSH credentials
+3. Click **Scan** to scan the configured subnet
+4. Click **Config** to configure subnet and SSH credentials
 5. Click a host card to open an SSH terminal in a new tab
-6. Use the **Quick-Connect** bar to connect directly to any IP
+6. Use the **Quick Search** bar to filter hosts by hostname or IP
+7. Use the **Quick Connect** bar to connect directly to any IP
 
 ## Configuration
 
