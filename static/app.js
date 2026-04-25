@@ -3,21 +3,24 @@
 (function () {
     'use strict';
 
-    const hostGrid     = document.getElementById('host-grid');
-    const statusDot    = document.getElementById('status-dot');
-    const statusText   = document.getElementById('status-text');
-    const hostCount    = document.getElementById('host-count');
-    const emptyState   = document.getElementById('empty-state');
-    const progressWrap = document.getElementById('progress-wrap');
-    const progressBar  = document.getElementById('progress-bar');
-    const scanBtn      = document.getElementById('scan-btn');
-    const scanIcon     = document.getElementById('scan-icon');
+    const hostGrid        = document.getElementById('host-grid');
+    const statusDot       = document.getElementById('status-dot');
+    const statusText      = document.getElementById('status-text');
+    const hostCount       = document.getElementById('host-count');
+    const emptyState      = document.getElementById('empty-state');
+    const progressWrap    = document.getElementById('progress-wrap');
+    const progressBar     = document.getElementById('progress-bar');
+    const scanBtn         = document.getElementById('scan-btn');
+    const scanIcon        = document.getElementById('scan-icon');
+    const quickSearchInput = document.getElementById('quick-search');
+    const quickSearchClear = document.getElementById('quick-search-clear');
 
     scanBtn.addEventListener('click', startScan);
 
     let scanWs        = null;
     let hosts         = [];
     let scanInProgress = false;
+    let searchQuery    = '';
 
     /* ── Utility ───────────────────────────────────────────────────── */
     function ipToInt(ip) {
@@ -62,6 +65,13 @@
         const cards = hostGrid.querySelectorAll('.host-card');
         if (idx >= cards.length) hostGrid.appendChild(card);
         else hostGrid.insertBefore(card, cards[idx]);
+
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const ip = host.ip.toLowerCase();
+            const hn = (host.hostname || '').toLowerCase();
+            if (!ip.includes(q) && !hn.includes(q)) card.style.display = 'none';
+        }
 
         hostCount.textContent = `${hosts.length} host${hosts.length !== 1 ? 's' : ''}`;
     }
@@ -211,6 +221,31 @@
     });
     ipPortInput.addEventListener('input', function () {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5);
+    });
+
+    /* ── Quick Search ─────────────────────────────────────────────── */
+    function applySearch(q) {
+        searchQuery = q;
+        const cards = hostGrid.querySelectorAll('.host-card');
+        cards.forEach(card => {
+            if (!q) { card.style.display = ''; return; }
+            const ip = (card.dataset.ip || '').toLowerCase();
+            const hn = (card.querySelector('.card-hostname')?.textContent || '').toLowerCase();
+            card.style.display = (ip.includes(q) || hn.includes(q)) ? '' : 'none';
+        });
+    }
+
+    quickSearchInput.addEventListener('input', function () {
+        const q = this.value.toLowerCase().trim();
+        applySearch(q);
+        quickSearchClear.classList.toggle('visible', this.value.length > 0);
+    });
+
+    quickSearchClear.addEventListener('click', function () {
+        quickSearchInput.value = '';
+        applySearch('');
+        this.classList.remove('visible');
+        quickSearchInput.focus();
     });
 
     /* ── Boot ──────────────────────────────────────────────────────── */

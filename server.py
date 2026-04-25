@@ -168,7 +168,15 @@ async def _resolve_hostname_via_ssh(ip: str, ws: WebSocket):
         try:
             ssh.connect(ip, port=port, username=user, password=pwd, timeout=2.5, banner_timeout=2.5, auth_timeout=3)
             stdin, stdout, stderr = ssh.exec_command("hostname", timeout=2)
-            return stdout.read().decode().strip()
+            raw = stdout.read().decode()
+            # Strip ANSI escape codes
+            clean = re.sub(r'\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', raw)
+            # Return the first line that looks like a valid hostname
+            for line in clean.splitlines():
+                line = line.strip()
+                if re.match(r'^[a-zA-Z0-9][a-zA-Z0-9\-\.]*$', line):
+                    return line
+            return None
         except Exception as e:
             log.debug(f"SSH hostname resolve failed for {ip}: {e}")
             return None

@@ -37,21 +37,40 @@
 
     <main class="main">
 
-      <!-- Quick Connect -->
-      <div class="qc-bar" id="quick-connect-section">
-        <div class="qc-tag">
-          <span class="qc-tag-dot"></span>
-          Quick Connect
+      <!-- Toolbar: Quick Search + Quick Connect -->
+      <div class="toolbar-row">
+
+        <!-- Quick Search -->
+        <div class="qs-bar">
+          <div class="qs-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            Quick Search
+          </div>
+          <div class="qs-inputs">
+            <input type="text" id="quick-search" class="qs-input" placeholder="hostname, ip…" autocomplete="off" spellcheck="false" />
+          </div>
+          <button class="qs-clear" id="quick-search-clear" aria-label="Clear">✕</button>
         </div>
-        <div class="qc-inputs">
-          <span class="qc-prompt">›</span>
-          <input type="text" id="ip-first-three" class="qc-input-prefix" value="192.168.1" autocomplete="off" spellcheck="false" />
-          <span class="qc-dot">.</span>
-          <input type="text" id="ip-last-octet" class="qc-input-last" inputmode="numeric" pattern="[0-9]*" placeholder="x" />
-          <span class="qc-sep">:</span>
-          <input type="text" id="qc-port" class="qc-input-port" inputmode="numeric" value="22" />
+
+        <!-- Quick Connect -->
+        <div class="qc-bar" id="quick-connect-section">
+          <div class="qc-tag">
+            <span class="qc-tag-dot"></span>
+            Quick Connect
+          </div>
+          <div class="qc-inputs">
+            <span class="qc-prompt">›</span>
+            <input type="text" id="ip-first-three" class="qc-input-prefix" value="192.168.1" autocomplete="off" spellcheck="false" />
+            <span class="qc-dot">.</span>
+            <input type="text" id="ip-last-octet" class="qc-input-last" inputmode="numeric" pattern="[0-9]*" placeholder="x" />
+            <span class="qc-sep">:</span>
+            <input type="text" id="qc-port" class="qc-input-port" inputmode="numeric" value="22" />
+          </div>
+          <button class="qc-btn" id="quick-connect-btn">Connect →</button>
         </div>
-        <button class="qc-btn" id="quick-connect-btn">Connect →</button>
+
       </div>
 
       <!-- Status -->
