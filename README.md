@@ -35,8 +35,8 @@ A single-page application for scanning the local network, discovering SSH-enable
 ## Installation
 
 ```
-git clone https://github.com/abeggi/terminal
-cd terminal
+git clone https://github.com/abeggi/NetWatch.git
+cd NetWatch
 pip install -r requirements.txt
 chmod +x manage.sh
 ```
